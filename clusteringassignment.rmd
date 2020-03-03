@@ -1,0 +1,136 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+Task 1: yes, there does appear to be a natural clustering of drivers. It would appear that the longer the distance driven, the higher the speeds.
+
+Task 3: It doesn't appear that the two clusters have any siilairties between them. There is no real point where they overlap.
+
+Task 4: Yes, the general consensus is that 4 clusters is optimal.
+
+Task 6: There is a lot more overapping of the clusters. Because we have different groups to refer to, we can find mroe similarities/differences in our data at a more granular level.
+
+Task 7: Yes, the consensus is 5 or 6 clusters.
+
+
+```{r}
+
+options(tidyverse.quiet=TRUE)
+library("tidyverse")
+library("cluster")
+library("factoextra")
+library("dendextend")
+
+```
+
+```{r}
+
+trucks <- read_csv("trucks.csv")
+
+summary(trucks)
+
+```
+
+```{r Task 1}
+
+ggplot(trucks, aes(x=Distance, y= Speeding))+
+  geom_point()
+
+```
+
+```{r Task 2}
+
+trucks2 <- trucks %>% select("Speeding", "Distance")
+
+trucks2 <- as.data.frame(scale(trucks2))
+
+```
+
+```{r Task 3}
+
+set.seed(1234)
+clusters1 <- kmeans(trucks2, 2)
+
+fviz_cluster(clusters1, trucks2)
+
+```
+
+```{r Task 4}
+
+set.seed(1234)
+fviz_nbclust(trucks2, kmeans, method = "wss") 
+
+set.seed(1234)
+fviz_nbclust(trucks2, kmeans, method = "silhouette") 
+
+```
+
+```{r Task 5}
+
+set.seed(1234)
+clusters2 <- kmeans(trucks2, 4)
+
+fviz_cluster(clusters2, trucks2)
+
+
+```
+
+```{r}
+
+wine <- read_csv("wineprice.csv")
+
+wine2 <- wine %>% select("Price", "WinterRain", "AGST", "HarvestRain", "Age")
+
+wine2 <- as.data.frame(scale(wine2))
+
+```
+
+```{r Task 7}
+
+
+set.seed(1234)
+fviz_nbclust(wine2, kmeans, method = "wss") 
+
+set.seed(1234)
+fviz_nbclust(wine2, kmeans, method = "silhouette") 
+
+```
+
+```{r Task 8}
+
+set.seed(1234)
+clusters3 <- kmeans(wine2, 5)
+
+fviz_cluster(clusters3, wine2)
+
+```
+
+```{r Task 9}
+
+m <- c( "average", "single", "complete", "ward")
+names(m) = c( "average", "single", "complete", "ward")
+
+ac <- function(x) {
+  agnes(wine2, method = x)$ac
+}
+map_dbl(m, ac)
+
+hc <- agnes(wine2, method = "ward") 
+pltree(hc, cex = 0.6, hang = -1, main = "Agglomerative Dendrogram") 
+
+plot(hc, cex.axis= 0.5) 
+rect.hclust(hc, k = 5, border = 2:6) #border selects colors for the boxes
+
+```
+
+```{r Task 10}
+
+hc2 <- diana(wine2)
+pltree(hc2, cex = 0.6, hang = -1, main = "Divisive Dendogram")
+
+plot(hc2, cex.axis= 0.5) 
+rect.hclust(hc2, k = 5, border = 2:6)
+
+```
+
